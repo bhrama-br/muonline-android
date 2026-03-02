@@ -282,8 +282,8 @@ namespace Client.Main
 
         protected override void Initialize()
         {
-            // Usa o diretório do executável como base para o appsettings.json,
-            // garantindo que o arquivo seja encontrado independente do CWD.
+            // Uses the executable directory as the basis for appsettings.json,
+            // ensuring the file can be found regardless of the CWD.
             ConfigDirectory = AppContext.BaseDirectory;
             AppConfiguration = new ConfigurationBuilder()
                 .SetBasePath(ConfigDirectory)

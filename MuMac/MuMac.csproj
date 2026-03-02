@@ -21,8 +21,8 @@
 
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);MACOS</DefineConstants>
-    <!-- Detecta se o Wine está disponível para compilar shaders HLSL -->
-    <!-- Se não estiver, usa os .xnb pré-compilados da pasta bin/ -->
+    <!-- Detects if Wine is available to compile HLSL shaders -->
+    <!-- If not, uses the pre-compiled .xnb files from the bin/ folder -->
     <MGContentPrebuiltDir>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../Client.Main/MGContent/bin/DesktopGL/Content'))</MGContentPrebuiltDir>
   </PropertyGroup>
 
@@ -44,15 +44,15 @@
     <TrimmerRootAssembly Include="mscorlib" />
   </ItemGroup>
 
-  <!-- Em Windows/CI: compila o conteúdo via MGCB normalmente -->
-  <!-- Em macOS sem Wine: usa os .xnb pré-compilados da pasta bin/ -->
+  <!-- In Windows/CI: compiles content via MGCB normally -->
+  <!-- In macOS without Wine: uses pre-compiled .xnb files from the bin/ folder -->
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
     <MonoGameContentReference Include="..\Client.Main\MGContent\Content.mgcb">
       <Link>Content\Content.mgcb</Link>
     </MonoGameContentReference>
   </ItemGroup>
 
-  <!-- Copia os .xnb pré-compilados quando não estiver em Windows (macOS/Linux sem Wine) -->
+  <!-- Copies pre-compiled .xnb files when not in Windows (macOS/Linux without Wine) -->
   <ItemGroup Condition="'$(OS)' != 'Windows_NT'">
     <PrebuiltContent Include="$(MGContentPrebuiltDir)\**\*.xnb" />
   </ItemGroup>
