@@ -21,6 +21,9 @@
 
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);MACOS</DefineConstants>
+    <!-- Detecta se o Wine está disponível para compilar shaders HLSL -->
+    <!-- Se não estiver, usa os .xnb pré-compilados da pasta bin/ -->
+    <MGContentPrebuiltDir>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../Client.Main/MGContent/bin/DesktopGL/Content'))</MGContentPrebuiltDir>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -41,11 +44,34 @@
     <TrimmerRootAssembly Include="mscorlib" />
   </ItemGroup>
 
-    <ItemGroup>
+  <!-- Em Windows/CI: compila o conteúdo via MGCB normalmente -->
+  <!-- Em macOS sem Wine: usa os .xnb pré-compilados da pasta bin/ -->
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
     <MonoGameContentReference Include="..\Client.Main\MGContent\Content.mgcb">
       <Link>Content\Content.mgcb</Link>
     </MonoGameContentReference>
   </ItemGroup>
+
+  <!-- Copia os .xnb pré-compilados quando não estiver em Windows (macOS/Linux sem Wine) -->
+  <ItemGroup Condition="'$(OS)' != 'Windows_NT'">
+    <PrebuiltContent Include="$(MGContentPrebuiltDir)\**\*.xnb" />
+  </ItemGroup>
+
+  <Target Name="CopyPrebuiltContent"
+          Condition="'$(OS)' != 'Windows_NT'"
+          BeforeTargets="Build">
+    <Error
+      Condition="!Exists('$(MGContentPrebuiltDir)')"
+      Text="Pasta de conteúdo pré-compilado não encontrada: $(MGContentPrebuiltDir). Execute o build no Windows (ou via CI) para gerar os .xnb dos shaders .fx." />
+    <Message Text="[MuMac] macOS detectado: copiando conteúdo pré-compilado de '$(MGContentPrebuiltDir)'" Importance="High" />
+    <ItemGroup>
+      <_PrebuiltXnb Include="$(MGContentPrebuiltDir)/**/*.xnb" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_PrebuiltXnb)"
+      DestinationFolder="$(OutputPath)/Content"
+      SkipUnchangedFiles="true" />
+  </Target>
 
   <Target Name="RestoreDotnetTools" BeforeTargets="CollectPackageReferences">
     <Message Text="Restoring dotnet tools" Importance="High" />
